@@ -1,0 +1,229 @@
+/* =========================================
+   style.css — GitHub Pages starter
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+
+/* --- Variables --- */
+:root {
+  --bg:        #f5f2ec;
+  --surface:   #edeade;
+  --ink:       #1a1814;
+  --ink-muted: #6b6760;
+  --accent:    #c84b2f;
+  --border:    #d4cfc6;
+  --radius:    4px;
+  --max-w:     680px;
+  --gap:       2rem;
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* --- Base --- */
+html { font-size: 18px; scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  line-height: 1.7;
+  padding: 3rem 1.5rem 6rem;
+}
+
+/* --- Layout --- */
+main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+/* --- Header --- */
+header {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+header .site-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.8rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+header .site-title em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+header .tagline {
+  margin-top: 0.4rem;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* --- Nav --- */
+nav {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+nav a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* --- Typography --- */
+h1, h2, h3, h4 {
+  font-family: 'DM Serif Display', serif;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.6em;
+}
+
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.6rem; margin-top: 2.5rem; }
+h3 { font-size: 1.2rem; margin-top: 2rem; }
+
+p { margin-bottom: 1.2rem; }
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:hover { opacity: 0.75; }
+
+strong { font-weight: 500; }
+
+em { font-style: italic; }
+
+/* --- Code --- */
+code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.15em 0.45em;
+  font-size: 0.88em;
+  color: var(--accent);
+}
+
+pre {
+  background: var(--ink);
+  color: #f0ece3;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* --- Blockquote --- */
+blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 1.5rem 0;
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+/* --- Lists --- */
+ul, ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+li { margin-bottom: 0.3rem; }
+
+/* --- Horizontal Rule --- */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+/* --- Card / Surface --- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+/* --- Button --- */
+.btn {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--bg);
+  text-decoration: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:hover { background: var(--accent); color: #fff; opacity: 1; }
+.btn:active { transform: translateY(1px); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+.btn-outline:hover { background: var(--ink); color: var(--bg); }
+
+/* --- Footer --- */
+footer {
+  max-width: var(--max-w);
+  margin: 4rem auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* --- Utility --- */
+.text-muted  { color: var(--ink-muted); }
+.text-accent { color: var(--accent); }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-4 { margin-top: 2rem; }
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  html { font-size: 16px; }
+  header .site-title { font-size: 2rem; }
+  nav { gap: 1rem; }
+}
