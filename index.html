@@ -1,11 +1,79 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="style.css">
-    <title>My Page</title>
-  </head>
-  <body>
-    <h1>Hello, world!</h1>
-    <p>My GitHub Pages site is working!</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Site</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main>
+
+    <header>
+      <div class="site-title">My <em>Site</em></div>
+      <div class="tagline">Just experimenting on the web</div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#writing">Writing</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <section id="about">
+      <h2>Hello there</h2>
+      <p>
+        Welcome to my little corner of the internet. This is a starter page built with
+        plain HTML and CSS — no frameworks, no build tools, just files.
+      </p>
+      <p>
+        Edit this file in your GitHub repo and changes will go live within a minute or two.
+        That's the beauty of <a href="https://pages.github.com" target="_blank">GitHub Pages</a>.
+      </p>
+
+      <div class="card">
+        <h3>Quick tips</h3>
+        <ul>
+          <li>Edit <code>index.html</code> to change content</li>
+          <li>Edit <code>style.css</code> to change colours, fonts, spacing</li>
+          <li>Add new <code>.html</code> files for extra pages</li>
+          <li>Commit &amp; push — Pages deploys automatically</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr>
+
+    <section id="writing">
+      <h2>Writing</h2>
+      <p class="text-muted">Nothing here yet — but here's what a post entry could look like:</p>
+
+      <div class="card">
+        <p class="text-muted" style="font-size:0.8rem; margin-bottom:0.3rem;">12 May 2025</p>
+        <h3 style="margin-top:0">My first post</h3>
+        <p>A short description of what this post is about. Keep it to a sentence or two so readers know if it's worth clicking.</p>
+        <a href="#" class="btn">Read more</a>
+      </div>
+    </section>
+
+    <hr>
+
+    <section id="contact">
+      <h2>Get in touch</h2>
+      <p>
+        Find me on
+        <a href="https://github.com" target="_blank">GitHub</a> —
+        or just fork this repo and make it your own.
+      </p>
+      <a href="mailto:you@example.com" class="btn btn-outline">Send an email</a>
+    </section>
+
+    <footer>
+      <span>© 2025 My Site</span>
+      <span>Built with HTML &amp; CSS</span>
+    </footer>
+
+  </main>
+
+</body>
 </html>
