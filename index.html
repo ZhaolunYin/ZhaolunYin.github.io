@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zhaolun's Site</title>
+  <title>Zhaolun Yin</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,10 +13,11 @@
       <div class="site-title"><em>Zhaolun</em> Yin</div>
       <div class="tagline">Code, writing, and experiments with a bias toward clarity.</div>
       <nav>
-        <a href="#about">About</a>
-        <a href="#work">Work</a>
-        <a href="#writing">Writing</a>
-        <a href="#contact">Contact</a>
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="about.html">About</a>
+        <a href="work.html">Work</a>
+        <a href="writing.html">Writing</a>
+        <a href="contact.html">Contact</a>
       </nav>
     </header>
 
@@ -29,34 +30,74 @@
         This site is a home for projects, notes, and the occasional opinion about
         software, systems, and making technology feel simpler than it really is.
       </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">4</span>
+          <span class="hero-stat-label">core pages</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">0</span>
+          <span class="hero-stat-label">frameworks</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">1</span>
+          <span class="hero-stat-label">static setup</span>
+        </div>
+      </div>
       <div class="hero-actions">
-        <a href="#work" class="btn">See selected work</a>
-        <a href="#contact" class="btn btn-outline">Get in touch</a>
+        <a href="work.html" class="btn">See selected work</a>
+        <a href="about.html" class="btn btn-outline">Read the about page</a>
       </div>
     </section>
 
-    <section id="about">
-      <h2>About</h2>
-      <p>
-        I like straightforward tools, legible systems, and websites that do not
-        fight their visitors. Most of my work starts with code, but the interesting
-        part is usually the shape of the problem: what deserves complexity, what
-        should stay boring, and what should be removed entirely.
-      </p>
-      <p>
-        This homepage stays intentionally light: plain HTML, plain CSS, and no
-        build step. Fast to load, easy to edit, and hard to break.
-      </p>
+    <section class="section-shell">
+      <div class="section-heading">
+        <h2>Start here</h2>
+        <p class="text-muted">A homepage should point somewhere, not try to do everything.</p>
+      </div>
+
+      <div class="project-grid">
+        <article class="card project-card">
+          <p class="card-label">About</p>
+          <h3>What I care about</h3>
+          <p>
+            Straightforward tools, legible systems, and software that earns its
+            complexity instead of assuming it.
+          </p>
+          <a href="about.html">Open the about page</a>
+        </article>
+
+        <article class="card project-card">
+          <p class="card-label">Work</p>
+          <h3>Projects and experiments</h3>
+          <p>
+            A place for selected builds, public repositories, and the things that
+            are worth turning into artifacts.
+          </p>
+          <a href="work.html">Browse selected work</a>
+        </article>
+
+        <article class="card project-card">
+          <p class="card-label">Writing</p>
+          <h3>Notes worth keeping</h3>
+          <p>
+            Short essays and working notes on engineering tradeoffs, simple systems,
+            and making tools easier to use.
+          </p>
+          <a href="writing.html">Read the writing page</a>
+        </article>
+      </div>
+    </section>
+
+    <hr>
+
+    <section class="section-shell">
+      <div class="section-heading">
+        <h2>Quick snapshot</h2>
+        <p class="text-muted">The homepage now acts as a guide instead of a dump.</p>
+      </div>
 
       <div class="note-grid">
-        <div class="card">
-          <p class="card-label">What I value</p>
-          <h3>Simple systems with sharp edges exposed</h3>
-          <p>
-            I prefer designs that are honest about tradeoffs instead of hiding
-            them behind layers of abstraction.
-          </p>
-        </div>
         <div class="card">
           <p class="card-label">Current mode</p>
           <h3>Shipping, writing, refining</h3>
@@ -65,81 +106,15 @@
             they become anything more official.
           </p>
         </div>
-      </div>
-    </section>
-
-    <hr>
-
-    <section id="work">
-      <div class="section-heading">
-        <h2>Selected work</h2>
-        <p class="text-muted">A few things this site can point to as it grows.</p>
-      </div>
-
-      <div class="project-grid">
-        <article class="card project-card">
-          <p class="card-label">Project</p>
-          <h3>Static experiments</h3>
+        <div class="card">
+          <p class="card-label">Contact</p>
+          <h3>Email for actual conversations</h3>
           <p>
-            Lightweight web pages built with minimal tooling, tuned for speed,
-            readability, and durability.
+            GitHub shows the public work. Email is better for project ideas,
+            questions, or collaboration.
           </p>
-          <a href="https://pages.github.com" target="_blank" rel="noreferrer">Why static sites still matter</a>
-        </article>
-
-        <article class="card project-card">
-          <p class="card-label">Writing</p>
-          <h3>Working notes</h3>
-          <p>
-            Short pieces on engineering decisions, project tradeoffs, and things
-            that became clearer only after building them.
-          </p>
-          <a href="#writing">Browse the writing section</a>
-        </article>
-
-        <article class="card project-card">
-          <p class="card-label">Open</p>
-          <h3>GitHub presence</h3>
-          <p>
-            Repositories, experiments, and the public trail of what I am making
-            or learning in code.
-          </p>
-          <a href="https://github.com/ZhaolunYin" target="_blank" rel="noreferrer">Visit GitHub</a>
-        </article>
-      </div>
-    </section>
-
-    <hr>
-
-    <section id="writing">
-      <div class="section-heading">
-        <h2>Writing</h2>
-        <p class="text-muted">Not a backlog of content, just the pieces worth keeping.</p>
-      </div>
-
-      <article class="card post-card">
-        <p class="post-meta">May 2026</p>
-        <h3>Why this site stays simple</h3>
-        <p>
-          A personal website does not need a framework to feel finished. A small,
-          well-composed page often says more than a feature list ever could.
-        </p>
-        <a href="#" class="btn">Read when published</a>
-      </article>
-    </section>
-
-    <hr>
-
-    <section id="contact">
-      <h2>Contact</h2>
-      <p>
-        If you want to talk about a project, an idea, or something I have written,
-        email is the best route. GitHub is the best place to see what I am doing
-        in public.
-      </p>
-      <div class="contact-actions">
-        <a href="mailto:yinzhaolun2012@gmail.com" class="btn">Send an email</a>
-        <a href="https://github.com/ZhaolunYin" target="_blank" rel="noreferrer" class="btn btn-outline">GitHub</a>
+          <a href="contact.html">Go to contact</a>
+        </div>
       </div>
     </section>
 
