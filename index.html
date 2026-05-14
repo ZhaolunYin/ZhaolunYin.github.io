@@ -1,127 +1,907 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zhaolun Yin</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terminal — SSH Connect</title>
+
+  <!-- xterm.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/addon-fit/addon-fit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/addon-web-links/addon-web-links.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c0f;
+      --surface:   #111318;
+      --border:    #1e2229;
+      --border-hi: #2e3340;
+      --green:     #00ff9d;
+      --green-dim: #00c97b;
+      --amber:     #ffb800;
+      --red:       #ff4d6a;
+      --text:      #c8cdd8;
+      --text-dim:  #5a6278;
+      --radius:    6px;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-ui:   'Syne', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      overflow: hidden;
+    }
+
+    /* ── grid ── */
+    .shell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      gap: 12px;
+    }
+
+    /* ── header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+    }
+
+    .logo {
+      font-family: var(--font-ui);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px;
+      border: 2px solid var(--green);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      color: var(--green);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .status-badge {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-hi);
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .status-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s;
+    }
+    .status-badge.connected .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-badge.connected { color: var(--green); border-color: var(--green-dim); }
+    .status-badge.error .dot { background: var(--red); }
+    .status-badge.error { color: var(--red); border-color: var(--red); }
+
+    /* ── connect form ── */
+    #connect-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .connect-card {
+      width: 100%;
+      max-width: 540px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .card-titlebar .btn {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .btn-close  { background: #ff5f57; }
+    .btn-min    { background: #febc2e; }
+    .btn-max    { background: #28c840; }
+
+    .card-title {
+      flex: 1;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      margin-right: 36px;
+    }
+
+    .card-body {
+      padding: 28px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    input, select {
+      background: var(--bg);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    input::placeholder { color: var(--text-dim); }
+    input:focus, select:focus {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 0 3px rgba(0,255,157,0.08);
+    }
+    select option { background: var(--surface); }
+
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 7px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: all 0.2s;
+    }
+    .auth-tab.active {
+      background: var(--border-hi);
+      color: var(--text);
+    }
+
+    #key-field { display: none; }
+
+    textarea {
+      background: var(--bg);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 0 3px rgba(0,255,157,0.08);
+    }
+
+    .connect-btn {
+      width: 100%;
+      padding: 11px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .connect-btn:hover { background: #00e88d; }
+    .connect-btn:active { transform: scale(0.98); }
+
+    .note {
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .note a { color: var(--green-dim); text-decoration: none; }
+    .note a:hover { text-decoration: underline; }
+
+    /* ── terminal wrapper ── */
+    #terminal-panel {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .term-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      flex-shrink: 0;
+    }
+
+    .term-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .term-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--text-dim);
+      background: transparent;
+      border: 1px solid transparent;
+      font-family: var(--font-mono);
+      transition: all 0.15s;
+    }
+    .term-tab.active {
+      background: var(--border);
+      border-color: var(--border-hi);
+      color: var(--text);
+    }
+    .term-tab .close-x {
+      opacity: 0;
+      font-size: 0.65rem;
+      line-height: 1;
+      transition: opacity 0.15s;
+    }
+    .term-tab:hover .close-x { opacity: 1; }
+    .add-tab {
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.9rem;
+      line-height: 1;
+      transition: all 0.15s;
+      font-family: var(--font-mono);
+    }
+    .add-tab:hover { border-color: var(--border-hi); color: var(--text); }
+
+    .term-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-dim);
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { border-color: var(--border-hi); color: var(--text); }
+    .icon-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+    #terminal-container {
+      flex: 1;
+      background: #0d0f12;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 12px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* override xterm */
+    .xterm { height: 100% !important; }
+    .xterm-viewport { border-radius: 0 0 var(--radius) var(--radius); }
+    .xterm-screen { padding: 0 !important; }
+
+    /* ── footer ── */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+
+    .footer-info { display: flex; gap: 20px; }
+
+    /* ── scanline overlay ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border-hi);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.76rem;
+      color: var(--text);
+      transform: translateY(60px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(.4,0,.2,1);
+      z-index: 1000;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ok   { border-color: var(--green-dim); color: var(--green); }
+    #toast.err  { border-color: var(--red); color: var(--red); }
+
+    /* responsive */
+    @media (max-width: 600px) {
+      .shell { padding: 12px; }
+      .field-row { grid-template-columns: 1fr; }
+      .connect-card { max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div class="eyebrow">Personal site</div>
-      <div class="site-title"><em>Zhaolun</em> Yin</div>
-      <div class="tagline">Code, writing, and experiments with a bias toward clarity.</div>
-      <nav>
-        <a href="index.html" aria-current="page">Home</a>
-        <a href="about.html">About</a>
-        <a href="work.html">Work</a>
-        <a href="writing.html">Writing</a>
-        <a href="contact.html">Contact</a>
-      </nav>
-    </header>
 
-    <section class="hero">
-      <p class="hero-kicker">Builder on the open web</p>
-      <h1>
-        I make small, useful things and document what I learn along the way.
-      </h1>
-      <p class="hero-copy">
-        This site is a home for projects, notes, and the occasional opinion about
-        software, systems, and making technology feel simpler than it really is.
-      </p>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <span class="hero-stat-value">4</span>
-          <span class="hero-stat-label">core pages</span>
+<div class="shell">
+
+  <!-- header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">&gt;_</div>
+      SSHTerm
+    </div>
+    <div class="status-badge" id="status-badge">
+      <span class="dot"></span>
+      <span id="status-text">Disconnected</span>
+    </div>
+  </header>
+
+  <!-- connect form -->
+  <div id="connect-panel">
+    <div class="connect-card">
+      <div class="card-titlebar">
+        <span class="btn btn-close"></span>
+        <span class="btn btn-min"></span>
+        <span class="btn btn-max"></span>
+        <span class="card-title">New SSH Connection</span>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Hostname / IP</label>
+            <input type="text" id="host" placeholder="192.168.1.1" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="field">
+            <label>Port</label>
+            <input type="number" id="port" value="22" min="1" max="65535" />
+          </div>
         </div>
-        <div class="hero-stat">
-          <span class="hero-stat-value">0</span>
-          <span class="hero-stat-label">frameworks</span>
+
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="root" autocomplete="off" spellcheck="false" />
         </div>
-        <div class="hero-stat">
-          <span class="hero-stat-value">1</span>
-          <span class="hero-stat-label">static setup</span>
+
+        <div class="field">
+          <label>Auth Method</label>
+          <div class="auth-tabs">
+            <button class="auth-tab active" onclick="setAuth('password')">Password</button>
+            <button class="auth-tab" onclick="setAuth('key')">Private Key</button>
+          </div>
         </div>
-      </div>
-      <div class="hero-actions">
-        <a href="work.html" class="btn">See selected work</a>
-        <a href="about.html" class="btn btn-outline">Read the about page</a>
-      </div>
-    </section>
 
-    <section class="section-shell">
-      <div class="section-heading">
-        <h2>Start here</h2>
-        <p class="text-muted">A homepage should point somewhere, not try to do everything.</p>
-      </div>
-
-      <div class="project-grid">
-        <article class="card project-card">
-          <p class="card-label">About</p>
-          <h3>What I care about</h3>
-          <p>
-            Straightforward tools, legible systems, and software that earns its
-            complexity instead of assuming it.
-          </p>
-          <a href="about.html">Open the about page</a>
-        </article>
-
-        <article class="card project-card">
-          <p class="card-label">Work</p>
-          <h3>Projects and experiments</h3>
-          <p>
-            A place for selected builds, public repositories, and the things that
-            are worth turning into artifacts.
-          </p>
-          <a href="work.html">Browse selected work</a>
-        </article>
-
-        <article class="card project-card">
-          <p class="card-label">Writing</p>
-          <h3>Notes worth keeping</h3>
-          <p>
-            Short essays and working notes on engineering tradeoffs, simple systems,
-            and making tools easier to use.
-          </p>
-          <a href="writing.html">Read the writing page</a>
-        </article>
-      </div>
-    </section>
-
-    <hr>
-
-    <section class="section-shell">
-      <div class="section-heading">
-        <h2>Quick snapshot</h2>
-        <p class="text-muted">The homepage now acts as a guide instead of a dump.</p>
-      </div>
-
-      <div class="note-grid">
-        <div class="card">
-          <p class="card-label">Current mode</p>
-          <h3>Shipping, writing, refining</h3>
-          <p>
-            Prototypes, notes, and personal tools tend to show up here before
-            they become anything more official.
-          </p>
+        <div class="field" id="pass-field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••" />
         </div>
-        <div class="card">
-          <p class="card-label">Contact</p>
-          <h3>Email for actual conversations</h3>
-          <p>
-            GitHub shows the public work. Email is better for project ideas,
-            questions, or collaboration.
-          </p>
-          <a href="contact.html">Go to contact</a>
-        </div>
-      </div>
-    </section>
 
-    <footer>
-      <span>© 2026 Zhaolun Yin</span>
-      <span>Built with plain HTML and CSS</span>
-    </footer>
-  </main>
+        <div class="field" id="key-field">
+          <label>Private Key (PEM)</label>
+          <textarea id="privkey" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
+        </div>
+
+        <button class="connect-btn" onclick="connectSSH()">Connect →</button>
+
+        <p class="note">
+          This frontend needs a WebSocket→SSH proxy (e.g.&nbsp;<a href="https://github.com/huashengdun/webssh" target="_blank">webssh</a>
+          or&nbsp;<a href="https://github.com/billchurch/webssh2" target="_blank">webssh2</a>).
+          Set your proxy URL in <code style="color:var(--amber)">WS_PROXY</code> at the top of the&nbsp;script.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- terminal -->
+  <div id="terminal-panel">
+    <div class="term-titlebar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="term-tabs" id="tab-list"></div>
+        <button class="add-tab" title="New tab" onclick="addTab()">＋</button>
+      </div>
+      <div class="term-actions">
+        <button class="icon-btn" onclick="copySelection()">copy</button>
+        <button class="icon-btn" onclick="clearTerm()">clear</button>
+        <button class="icon-btn danger" onclick="disconnect()">disconnect</button>
+      </div>
+    </div>
+    <div id="terminal-container"></div>
+  </div>
+
+  <!-- footer -->
+  <footer>
+    <div class="footer-info">
+      <span id="footer-host">—</span>
+      <span id="footer-size">—</span>
+      <span id="footer-latency">—</span>
+    </div>
+    <span>xterm.js · WebSocket SSH</span>
+  </footer>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ── CONFIG ─────────────────────────────────────────────────── */
+// Point this at your WebSocket SSH proxy. Examples:
+//   webssh:  'ws://yourserver:8888'
+//   webssh2: 'ws://yourserver:2222/ssh/host/{host}'
+const WS_PROXY = 'ws://localhost:8888';
+
+/* ── STATE ───────────────────────────────────────────────────── */
+let tabs        = [];
+let activeTabId = null;
+let authMode    = 'password';
+let pingInterval, latencyStart;
+
+/* ── AUTH TOGGLE ─────────────────────────────────────────────── */
+function setAuth(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('pass-field').style.display = mode === 'password' ? '' : 'none';
+  document.getElementById('key-field').style.display  = mode === 'key'      ? '' : 'none';
+}
+
+/* ── CONNECT ─────────────────────────────────────────────────── */
+function connectSSH() {
+  const host = document.getElementById('host').value.trim();
+  const port = document.getElementById('port').value.trim() || '22';
+  const user = document.getElementById('username').value.trim();
+
+  if (!host || !user) { toast('Host and username are required.', 'err'); return; }
+
+  // Switch panels
+  document.getElementById('connect-panel').style.display = 'none';
+  const tp = document.getElementById('terminal-panel');
+  tp.style.display = 'flex';
+
+  // Update footer
+  document.getElementById('footer-host').textContent = `${user}@${host}:${port}`;
+
+  // Build WS URL (adjust for your proxy's scheme)
+  const wsUrl = WS_PROXY;
+
+  // Create first tab
+  addTab(host, user, wsUrl);
+}
+
+/* ── TABS ────────────────────────────────────────────────────── */
+let tabCounter = 0;
+
+function addTab(host, user, wsUrl) {
+  // If no args, clone connection to same host
+  if (!host) {
+    const existing = tabs[0];
+    if (!existing) return;
+    host  = existing.host;
+    user  = existing.user;
+    wsUrl = existing.wsUrl;
+  }
+
+  const id    = ++tabCounter;
+  const label = `${user}@${host}`;
+
+  // Create xterm instance
+  const term = new Terminal({
+    fontFamily:      "'JetBrains Mono', monospace",
+    fontSize:        14,
+    lineHeight:      1.4,
+    theme: {
+      background:  '#0d0f12',
+      foreground:  '#c8cdd8',
+      cursor:      '#00ff9d',
+      cursorAccent:'#0d0f12',
+      selectionBackground: 'rgba(0,255,157,0.2)',
+      black:   '#1e2229', red:     '#ff4d6a',
+      green:   '#00ff9d', yellow:  '#ffb800',
+      blue:    '#4da6ff', magenta: '#c084fc',
+      cyan:    '#22d3ee', white:   '#c8cdd8',
+      brightBlack:   '#5a6278', brightRed:     '#ff6b85',
+      brightGreen:   '#33ffad', brightYellow:  '#ffc933',
+      brightBlue:    '#66b5ff', brightMagenta: '#cf9dfc',
+      brightCyan:    '#38e5ff', brightWhite:   '#e8ecf4',
+    },
+    cursorBlink:   true,
+    cursorStyle:   'bar',
+    scrollback:    5000,
+    allowProposedApi: true,
+  });
+
+  const fitAddon      = new FitAddon.FitAddon();
+  const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+  term.loadAddon(fitAddon);
+  term.loadAddon(webLinksAddon);
+
+  // Attempt WS connection
+  let ws = null;
+  let connected = false;
+
+  function openWS() {
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      connected = true;
+      setStatus('connected');
+      toast(`Connected to ${label}`, 'ok');
+
+      // Send auth payload (webssh protocol; adapt for webssh2 or custom proxy)
+      const payload = {
+        hostname: document.getElementById('host').value.trim(),
+        port:     parseInt(document.getElementById('port').value) || 22,
+        username: document.getElementById('username').value.trim(),
+        password: authMode === 'password' ? document.getElementById('password').value : undefined,
+        privatekey: authMode === 'key'    ? document.getElementById('privkey').value : undefined,
+        term:     'xterm-256color',
+        cols:     term.cols,
+        rows:     term.rows,
+      };
+      ws.send(JSON.stringify(payload));
+
+      // Ping loop for latency display
+      pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          latencyStart = performance.now();
+          ws.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 5000);
+    };
+
+    ws.onmessage = (e) => {
+      // Detect pong
+      if (typeof e.data === 'string') {
+        try {
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'pong') {
+            const ms = Math.round(performance.now() - latencyStart);
+            document.getElementById('footer-latency').textContent = `${ms}ms`;
+            return;
+          }
+        } catch (_) {}
+        term.write(e.data);
+      } else {
+        // Binary
+        e.data.arrayBuffer().then(buf => term.write(new Uint8Array(buf)));
+      }
+    };
+
+    ws.onclose = () => {
+      connected = false;
+      clearInterval(pingInterval);
+      term.write('\r\n\x1b[31m[Connection closed]\x1b[0m\r\n');
+      setStatus('disconnected');
+    };
+
+    ws.onerror = () => {
+      term.write('\r\n\x1b[31m[WebSocket error — check proxy URL and CORS]\x1b[0m\r\n');
+      setStatus('error');
+    };
+  }
+
+  // Demo mode when no real proxy
+  function startDemo() {
+    term.write('\x1b[32mSSHTerm\x1b[0m — Demo Mode\r\n');
+    term.write('────────────────────────────────────────────────────────\r\n');
+    term.write('\x1b[33m[!]\x1b[0m No WebSocket proxy found. Running local demo shell.\r\n');
+    term.write('    Set \x1b[36mWS_PROXY\x1b[0m at the top of the script to connect for real.\r\n\r\n');
+    setStatus('connected');
+    toast('Demo mode — no proxy', 'ok');
+    runDemoShell(term);
+  }
+
+  // Try WS, fall back to demo
+  const testWs = new WebSocket(wsUrl);
+  testWs.onopen  = () => { testWs.close(); openWS(); };
+  testWs.onerror = () => { startDemo(); };
+
+  // Mount terminal
+  const container = document.getElementById('terminal-container');
+  container.innerHTML = '';
+  term.open(container);
+  fitAddon.fit();
+  updateFooterSize(term);
+
+  term.onData(data => {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
+  });
+
+  term.onResize(({ cols, rows }) => {
+    updateFooterSize(term);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+    }
+  });
+
+  // Resize observer
+  const ro = new ResizeObserver(() => fitAddon.fit());
+  ro.observe(container);
+
+  const tabObj = { id, label, term, fitAddon, ws, host, user, wsUrl };
+  tabs.push(tabObj);
+  renderTabs();
+  activateTab(id);
+}
+
+function renderTabs() {
+  const list = document.getElementById('tab-list');
+  list.innerHTML = '';
+  tabs.forEach(t => {
+    const el = document.createElement('button');
+    el.className = 'term-tab' + (t.id === activeTabId ? ' active' : '');
+    el.innerHTML = `${t.label} <span class="close-x" data-id="${t.id}">✕</span>`;
+    el.onclick = (e) => {
+      if (e.target.dataset.id) { closeTab(parseInt(e.target.dataset.id)); }
+      else { activateTab(t.id); }
+    };
+    list.appendChild(el);
+  });
+}
+
+function activateTab(id) {
+  activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  const container = document.getElementById('terminal-container');
+  container.innerHTML = '';
+  tab.term.open(container);
+  tab.fitAddon.fit();
+  renderTabs();
+}
+
+function closeTab(id) {
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  const tab = tabs[idx];
+  if (tab.ws) tab.ws.close();
+  tabs.splice(idx, 1);
+  if (tabs.length === 0) { disconnect(); return; }
+  activateTab(tabs[Math.max(0, idx - 1)].id);
+  renderTabs();
+}
+
+/* ── DEMO SHELL ──────────────────────────────────────────────── */
+function runDemoShell(term) {
+  const fs = {
+    '~': { type: 'dir', children: ['projects', 'notes.txt', '.bashrc'] },
+    '~/projects': { type: 'dir', children: ['webapp', 'scripts'] },
+    '~/projects/webapp': { type: 'dir', children: ['index.html', 'app.js'] },
+    '~/notes.txt': { type: 'file', content: 'SSH terminal demo running via xterm.js.\nDeploy a webssh proxy to connect for real.\n' },
+    '~/.bashrc': { type: 'file', content: '# .bashrc\nexport PS1="\\u@\\h:\\w$ "\nalias ll="ls -la"\n' },
+    '~/projects/webapp/index.html': { type: 'file', content: '<!DOCTYPE html>\n<html><body>Hello</body></html>\n' },
+    '~/projects/webapp/app.js': { type: 'file', content: 'console.log("hello world");\n' },
+  };
+
+  let cwd = '~';
+  let buf = '';
+  const user = document.getElementById('username').value || 'user';
+  const host = document.getElementById('host').value || 'demo';
+
+  function prompt() {
+    term.write(`\r\n\x1b[32m${user}@${host}\x1b[0m:\x1b[34m${cwd}\x1b[0m$ `);
+  }
+
+  function run(cmd) {
+    cmd = cmd.trim();
+    if (!cmd) { prompt(); return; }
+    const [prog, ...args] = cmd.split(/\s+/);
+
+    const cmds = {
+      pwd:  () => term.write(`\r\n${cwd}`),
+      echo: () => term.write(`\r\n${args.join(' ')}`),
+      clear:() => { term.clear(); return; },
+      date: () => term.write(`\r\n${new Date().toString()}`),
+      whoami: () => term.write(`\r\n${user}`),
+      uname: () => term.write('\r\nLinux demo 6.1.0 #1 SMP x86_64 GNU/Linux'),
+      uptime: () => term.write('\r\n 00:00:00 up 42 days, 3:14, 1 user, load average: 0.00, 0.01, 0.00'),
+      ls: () => {
+        const dir = fs[cwd];
+        if (!dir) { term.write('\r\nls: cannot read directory'); return; }
+        const items = dir.children.map(c => {
+          const path = `${cwd}/${c}`;
+          return fs[path]?.type === 'dir'
+            ? `\x1b[34m${c}/\x1b[0m`
+            : `\x1b[0m${c}\x1b[0m`;
+        });
+        term.write('\r\n' + items.join('  '));
+      },
+      cat: () => {
+        if (!args[0]) { term.write('\r\ncat: missing operand'); return; }
+        const path = args[0].startsWith('~') ? args[0] : `${cwd}/${args[0]}`;
+        const entry = fs[path] || fs[`${cwd}/${args[0]}`];
+        if (!entry || entry.type === 'dir') { term.write(`\r\ncat: ${args[0]}: No such file`); return; }
+        term.write('\r\n' + entry.content.replace(/\n/g, '\r\n'));
+      },
+      cd: () => {
+        const target = args[0] || '~';
+        const newPath = target === '~' ? '~'
+          : target.startsWith('~/') ? target
+          : target === '..' ? (cwd === '~' ? '~' : cwd.split('/').slice(0, -1).join('/') || '~')
+          : `${cwd}/${target}`;
+        if (fs[newPath]?.type === 'dir') { cwd = newPath; }
+        else { term.write(`\r\ncd: ${target}: No such directory`); }
+      },
+      help: () => term.write('\r\nAvailable: ls, cd, cat, pwd, echo, clear, date, whoami, uname, uptime, help'),
+    };
+
+    if (cmds[prog]) cmds[prog]();
+    else term.write(`\r\n\x1b[31mbash: ${prog}: command not found\x1b[0m`);
+    prompt();
+  }
+
+  prompt();
+
+  term.onData(data => {
+    const code = data.charCodeAt(0);
+    if (code === 13) { // Enter
+      run(buf);
+      buf = '';
+    } else if (code === 127) { // Backspace
+      if (buf.length) { buf = buf.slice(0, -1); term.write('\b \b'); }
+    } else if (code === 3) { // Ctrl-C
+      term.write('^C'); buf = ''; prompt();
+    } else if (code === 12) { // Ctrl-L
+      term.clear(); buf = ''; prompt();
+    } else if (code >= 32) {
+      buf += data; term.write(data);
+    }
+  });
+}
+
+/* ── ACTIONS ─────────────────────────────────────────────────── */
+function copySelection() {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (!tab) return;
+  const sel = tab.term.getSelection();
+  if (sel) { navigator.clipboard.writeText(sel).then(() => toast('Copied!', 'ok')); }
+  else toast('No text selected', 'err');
+}
+
+function clearTerm() {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) tab.term.clear();
+}
+
+function disconnect() {
+  clearInterval(pingInterval);
+  tabs.forEach(t => { if (t.ws) t.ws.close(); });
+  tabs = []; activeTabId = null;
+  document.getElementById('terminal-panel').style.display = 'none';
+  document.getElementById('connect-panel').style.display  = 'flex';
+  setStatus('disconnected');
+  document.getElementById('footer-host').textContent    = '—';
+  document.getElementById('footer-size').textContent    = '—';
+  document.getElementById('footer-latency').textContent = '—';
+}
+
+/* ── UI HELPERS ──────────────────────────────────────────────── */
+function setStatus(s) {
+  const badge = document.getElementById('status-badge');
+  const text  = document.getElementById('status-text');
+  badge.className = 'status-badge';
+  if (s === 'connected')    { badge.classList.add('connected');   text.textContent = 'Connected'; }
+  else if (s === 'error')   { badge.classList.add('error');       text.textContent = 'Error'; }
+  else                      {                                      text.textContent = 'Disconnected'; }
+}
+
+function updateFooterSize(term) {
+  document.getElementById('footer-size').textContent = `${term.cols}×${term.rows}`;
+}
+
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 2800);
+}
+
+/* ── GLOBAL RESIZE ───────────────────────────────────────────── */
+window.addEventListener('resize', () => {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) tab.fitAddon.fit();
+});
+</script>
 </body>
 </html>
